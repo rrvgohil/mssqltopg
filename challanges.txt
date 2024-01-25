@@ -1,0 +1,68 @@
+while CREATE TABLE Products
+
+ERROR:  operator does not exist: money >= integer
+LINE 28:  CONSTRAINT CK_Products_UnitPrice CHECK (UnitPrice >= 0),
+                                                            ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts. 
+
+solution: DDL changed  
+
+from: UnitPrice money NULL CONSTRAINT "DF_Products_UnitPrice" DEFAULT (0) 
+to: UnitPrice int NULL CONSTRAINT "DF_Products_UnitPrice" DEFAULT (0)
+
+=====================================================
+while create view Invoices 
+
+ERROR:  cannot cast type double precision to money
+LINE 9:  (CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100)...
+          ^ 
+solution: DDL changed
+
+From: (CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100) AS money)*100) AS ExtendedPrice
+to: (CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100) AS int)*100) AS ExtendedPrice 
+
+=====================================================
+while create view "Order Details Extended"
+
+ERROR:  cannot cast type double precision to money
+LINE 4:  (CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100)...
+          ^ 
+solution: DDL changed
+
+From: (CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100) AS money)*100) A
+TO: (CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100) AS int)*100) A
+
+============================================
+
+while create view "Order Subtotals" AS
+
+From: SELECT "Order Details".OrderID, Sum(CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100) AS money)*100) AS Subtotal
+To: SELECT "Order Details".OrderID, Sum(CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100) AS int)*100) AS Subtotal
+
+===========================================
+
+create view "Product Sales for 1997" AS
+
+ERROR:  cannot cast type double precision to money
+LINE 3: Sum(CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/10...
+            ^ 
+solution: DDL changed 
+
+from: Sum(CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100) AS money)*100) AS ProductSales
+to: Sum(CAST(("Order Details".UnitPrice*Quantity*(1-Discount)/100) AS int)*100) AS ProductSales
+
+==========================================
+
+create or replace procedure "Ten Most Expensive Products" (out cur refcursor) AS $$
+begin
+SET ROWCOUNT 10
+
+ERROR:  syntax error at or near "10"
+LINE 3: SET ROWCOUNT 10
+
+Solution: changed below in ddl 
+
+
+SET ROWCOUNT to 10;
+
+===============================
